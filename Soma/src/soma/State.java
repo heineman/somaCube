@@ -18,7 +18,7 @@ P	7 @ (1,2,0) at Z- 180
 23000001	2020-04-28 16:22:11.993033627 
 24000001	2020-04-28 16:22:58.464969649
  1000000 every 47 seconds
- 
+
 1 @ (0,0,0) at Y+ 0
 2 @ (0,0,1) at Y+ 270
 3 @ (2,0,2) at X+ 270
@@ -49,6 +49,8 @@ public class State {
 	Rotation[] rotation;
 	Piece[] pieces;
 
+	HashSet<String> allSolutions = new HashSet<>();
+	
 	public static void main(String[] args) {
 		new State().search();
 	}
@@ -77,8 +79,7 @@ public class State {
 
 		return state[here.x][here.y][here.z] == 0; 
 	}
-	static int max = 1;
-
+	
 	/** 
 	 * Standard backtracking algorithm to find where to place piece. There are six orientations
 	 * for each piece, and you can sweep each piece around clockwise in four rotations, thus there
@@ -89,27 +90,22 @@ public class State {
 	 * let the brute force proceed.
 	 */
 	void explore(int idx) {
+		// generate a pulse, roughly every 50 seconds. Not truly "# of configurations checked" but useful.
 		if (count++ % 1000000 == 0) {
-			System.out.println(count);
+			System.out.println(count + " trial");
 		}
-		if (idx > max) {
-			max = idx;
-
-			for (int p = 0; p < pieces.length; p++) {
-				System.out.println(p + " @ " + anchor[p] + " at " + orientation[p] + " " + rotation[p]);
-			}
-			System.out.println();
-			System.out.println(denseMap());
-		}
-
+		
 		if (idx == pieces.length) {
-			solutions++;
-			for (int p = 1; p < pieces.length; p++) {
-				System.out.println(p + " @ " + anchor[p] + " at " + orientation[p] + " " + rotation[p]);
+			String key = denseMap();
+			if (!allSolutions.contains(key)) {
+				allSolutions.add(key);
+
+				for (int p = 1; p < pieces.length; p++) {
+					System.out.println(p + " @ " + anchor[p] + " at " + orientation[p] + " " + rotation[p]);
+				}
+				System.out.println("Found at " + count);
+				return;
 			}
-			System.out.println("Found at " + count);
-			System.exit(1);
-			return;
 		}
 
 		for (int x = 0; x < 3; x++) {
@@ -129,13 +125,11 @@ public class State {
 						for (Orientation o : Orientation.iterable()) {
 							Piece oriented = pieces[p].orient(o);
 
-							for (Axis a : Axis.values()) {                                            // for each axis
-								Piece rotated = oriented;
-								for (Rotation r : Rotation.iterable()) {                              // each of four possible rotations
-									if (r.degree != 0) { rotated = rotated.rotateClockwise(a);  }   //    ... just keep rotating clockwise
-									if (place(x, y, z, rotated, o, r)) {
+							for (Axis a : Axis.values()) {                                   // for each axis
+								for (Rotation rotated: Rotation.rotations(oriented, a)) {    //   ... each possible rotations
+									if (place(x, y, z, rotated.piece, o, rotated)) {         //   ... try to place piece
 										explore(idx+1);
-										unplace(x, y, z, rotated);    // begin backtrack...
+										unplace(x, y, z, rotated.piece);                     // begin backtrack...
 									} 
 								}
 							}
@@ -194,6 +188,7 @@ public class State {
 		}
 	}
 
+	/** Generate a KEY to uniquely identify the state. Note: not unique with regards to 2x2x3=24 rotations. */
 	public String denseMap() {
 		StringBuffer sb = new StringBuffer("[");
 		for (int x = 0; x < 3; x++) {
