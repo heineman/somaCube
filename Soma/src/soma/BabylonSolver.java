@@ -7,7 +7,7 @@ public class BabylonSolver {
 		for (int v = 1; v <= 12; v++) {
 			System.out.println("Variation " + v);
 			// Create the nth bablyon set and try to find a solution.
-			new State(new CubeTarget(), BabylonCube.variation(v)).search();
+			new State(new CubeTarget(), BabylonCube.variation(v), 1).search();
 		}
 	}
 }
