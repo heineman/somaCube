@@ -2,7 +2,7 @@ package soma;
 
 import soma.sets.BabylonCube;
 
-public class BablyonSolver {
+public class BabylonSolver {
 	public static void main(String[] args) {
 		for (int v = 1; v <= 12; v++) {
 			System.out.println("Variation " + v);
