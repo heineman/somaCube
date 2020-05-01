@@ -24,7 +24,7 @@ public class Coord {
 		this.y = y;
 		this.z = z;
 	}
-	
+
 	/** Return a new coordinate resulting from the addition of the parameter. */
 	public Coord add (Coord c) {
 		return new Coord(x + c.x, y + c.y, z + c.z);

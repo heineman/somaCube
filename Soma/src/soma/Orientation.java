@@ -28,6 +28,11 @@ public class Orientation {
 		else { this.sign = 0; }
 	}
 		
+	public Orientation(Orientation orientation) {
+		this.axis = orientation.axis;
+		this.sign = orientation.sign;
+	}
+
 	static ArrayList<Orientation> values = null;
 	
 	/** Return all six orientations. */
